@@ -145,7 +145,6 @@
 
       db.collection("track").get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          console.log(`${doc.id} => ${doc.data()}`);
           var newPosition = doc.data().coordinate;
           var point = new google.maps.LatLng(newPosition._lat, newPosition._long);
           var elapsedMs = Date.now() - doc.time;
@@ -155,41 +154,15 @@
         });
       });
 
-      // Reference to the clicks in Firebase.
-      var clicks = firebase.database().ref('clicks');
-
-      // Listen for clicks and add them to the heatmap.
-      clicks.orderByChild('timestamp').startAt(startTime).on('child_added',
-        function (snapshot) {
-          // Get that click from firebase.
-          var newPosition = snapshot.val();
-          var point = new google.maps.LatLng(newPosition.lat, newPosition.lng);
-          var elapsedMs = Date.now() - newPosition.timestamp;
-
+      db.collection("track").onSnapshot(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
+          var newPosition = doc.data().coordinate;
+          var point = new google.maps.LatLng(newPosition._lat, newPosition._long);
+          var elapsedMs = Date.now() - doc.time;
           // Add the point to the heatmap.
           heatmap.getData().push(point);
-
-          // Request entries older than expiry time (10 minutes).
-          var expiryMs = Math.max(60 * 10 * 1000 - elapsedMs, 0);
-
-          // Set client timeout to remove the point after a certain time.
-          window.setTimeout(function () {
-            // Delete the old point from the database.
-            snapshot.ref.remove();
-          }, expiryMs);
-        }
-      );
-
-      // Remove old data from the heatmap when a point is removed from firebase.
-      clicks.on('child_removed', function (snapshot, prevChildKey) {
-        var heatmapData = heatmap.getData();
-        var i = 0;
-        while (snapshot.val().lat != heatmapData.getAt(i).lat()
-          || snapshot.val().lng != heatmapData.getAt(i).lng()) {
-          i++;
-        }
-        heatmapData.removeAt(i);
-      });
+        });
+    });
     }
 
     /**
