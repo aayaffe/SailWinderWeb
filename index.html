@@ -93,8 +93,9 @@
     /**
      * Creates a map object with a click listener and a heatmap.
      */
-    function initMap() {
-      var map = new google.maps.Map(document.getElementById('map'), {
+    var map;
+	function initMap() {
+      map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 0, lng: 0 },
         zoom: 3,
         styles: [{
@@ -145,13 +146,17 @@
 
       db.collection("track").get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-          console.log(`${doc.id} => ${doc.data()}`);
           var newPosition = doc.data().coordinate;
           var point = new google.maps.LatLng(newPosition._lat, newPosition._long);
           var elapsedMs = Date.now() - doc.time;
-
+var image = 'https://i.imgur.com/sNZrCdk.png';
+  var beachMarker = new google.maps.Marker({
+    position: point,
+    map: map,
+    icon: image
+  });
           // Add the point to the heatmap.
-          heatmap.getData().push(point);
+          
         });
       });
 
