@@ -94,7 +94,7 @@
      * Creates a map object with a click listener and a heatmap.
      */
     var map;
-	function initMap() {
+    function initMap() {
       map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 0, lng: 0 },
         zoom: 3,
@@ -123,52 +123,57 @@
         addToFirebase(data);
       });
 
-      // Create a heatmap.
-      var heatmap = new google.maps.visualization.HeatmapLayer({
-        data: [],
-        map: map,
-        radius: 16
-      });
-
-      initAuthentication(initFirebase.bind(undefined, heatmap));
+      initAuthentication(initFirebase.bind(undefined));
     }
 
+
+    var markerDict = {};
+    var boatDict = {};
     /**
      * Set up a Firebase with deletion on clicks older than expiryMs
      * @param {!google.maps.visualization.HeatmapLayer} heatmap The heatmap to
      */
-    function initFirebase(heatmap) {
+    function initFirebase() {
 
       // 10 minutes before current time.
       var startTime = new Date().getTime() - (60 * 10 * 1000);
 
       var db = firebase.firestore();
 
-      db.collection("track").get().then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
+
+
+      db.collection("track").onSnapshot(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+          if (doc.data().userId in boatDict) {
+            if (boatDict[doc.data().userId].timeStamp < doc.data().time) {
+              boatDict[doc.data().userId] = {
+                timeStamp: doc.data().time,
+                coordinate: doc.data().coordinate
+              }
+            }
+          } else {
+            boatDict[doc.data().userID] = {
+              timeStamp: doc.data().time,
+              coordinate: doc.data().coordinate
+            }
+          }
           var newPosition = doc.data().coordinate;
           var point = new google.maps.LatLng(newPosition._lat, newPosition._long);
-          var elapsedMs = Date.now() - doc.time;
-var image = 'https://i.imgur.com/sNZrCdk.png';
-  var beachMarker = new google.maps.Marker({
-    position: point,
-    map: map,
-    icon: image
-  });
+          var elapsedMs = Date.now() - doc.data().time;
           // Add the point to the heatmap.
-          
+          var image = 'https://i.imgur.com/sNZrCdk.png';
+          if (doc.data().userId in markerDict) {
+            markerDict[doc.data().userId].setPosition(point);
+          } else {
+            var m = new google.maps.Marker({
+              position: point,
+              map: map,
+              icon: image
+            });
+            markerDict[doc.data().userId] = m;
+          }
         });
       });
-
-      db.collection("track").onSnapshot(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-          var newPosition = doc.data().coordinate;
-          var point = new google.maps.LatLng(newPosition._lat, newPosition._long);
-          var elapsedMs = Date.now() - doc.time;
-          // Add the point to the heatmap.
-          heatmap.getData().push(point);
-        });
-    });
     }
 
     /**
