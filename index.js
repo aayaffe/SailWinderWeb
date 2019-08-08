@@ -94,10 +94,14 @@ function initMap() {
     initAuthentication(initFirebase.bind(undefined));
 }
 
-
 var markerDict = {};
 var boatDict = {};
-var gatesDict = {}
+
+var gatesIconMap = new Map();
+gatesIconMap.set("Start", "start.png")
+gatesIconMap.set("End", "end.png")
+gatesIconMap.set("Gate", "buoy.png")
+gatesIconMap.set("WayPoint", "buoy.png")
 
 /**
  * Set up a Firebase with deletion on clicks older than expiryMs
@@ -148,39 +152,39 @@ function initFirebase() {
 
     db.collection("gates").onSnapshot(function (querySnapshot) {
         querySnapshot.forEach(function (doc) {
-
-            if (doc.data().gateType === "Gate") {
-                gatesDict[doc.data().order] = {
-                    gateType: doc.data().gateType,
-                    timeStamp: doc.data().time,
-                    coordinate: doc.data().coordinate,
-                    coordinate2: doc.data().coordinate2
-                }
-            } else {
-                gatesDict[doc.data().order] = {
-                    gateType: doc.data().gateType,
-                    timeStamp: doc.data().time,
-                    coordinate: doc.data().coordinate
-                }
-            }
-
-            var image = 'buoy1.png';
             var gatePosition = doc.data().coordinate1;
             var point = new google.maps.LatLng(gatePosition._lat, gatePosition._long);
 
             var m = new google.maps.Marker({
                 position: point,
                 map: map,
-                icon: image
+                icon: gatesIconMap.get(doc.data().gateType)
             });
 
-            if (gatesDict[doc.data().order].coordinate2) {
+            if (doc.data().coordinate2) {
                 var secondPosition = doc.data().coordinate2;
                 var secondpoint = new google.maps.LatLng(secondPosition._lat, secondPosition._long);
                 var m = new google.maps.Marker({
                     position: secondpoint,
                     map: map,
-                    icon: image
+                    icon: gatesIconMap.get(doc.data().gateType)
+                });
+                var line = new google.maps.Polyline({
+                    path: [point, secondpoint],
+                    strokeColor: "#000000",
+                    strokeOpacity: 0.2,
+                    strokeWeight: 3,
+                    icons: [{
+                        icon: {
+                            path: 'M 0,-1 0,1',
+                            strokeOpacity: 1,
+                            scale: 4
+                        },
+                        offset: '0',
+                        repeat: '20px'
+                    }],
+                    geodesic: true,
+                    map: map
                 });
             }
             // Add the point to the heatmap.
