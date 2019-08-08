@@ -160,7 +160,8 @@ function initFirebase() {
             var m = new google.maps.Marker({
                 position: point,
                 map: map,
-                icon: gatesIconMap.get(doc.data().gateType)
+                icon: gatesIconMap.get(doc.data().gateType),
+                title: "" + doc.data().order
             });
 
             if (doc.data().coordinate2) {
@@ -170,7 +171,7 @@ function initFirebase() {
                     position: secondpoint,
                     map: map,
                     icon: gatesIconMap.get(doc.data().gateType),
-                    title: doc.data().gateType
+                    title: "" + doc.data().order
                 });
                 var line = new google.maps.Polyline({
                     path: [point, secondpoint],
