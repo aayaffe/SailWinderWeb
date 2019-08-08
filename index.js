@@ -97,6 +97,8 @@ function initMap() {
 
 var markerDict = {};
 var boatDict = {};
+var gatesDict = {}
+
 /**
  * Set up a Firebase with deletion on clicks older than expiryMs
  * @param {!google.maps.visualization.HeatmapLayer} heatmap The heatmap to
@@ -118,26 +120,70 @@ function initFirebase() {
                     }
                 }
             } else {
-                boatDict[doc.data().userID] = {
+                boatDict[doc.data().userId] = {
                     timeStamp: doc.data().time,
                     coordinate: doc.data().coordinate
                 }
             }
-            var newPosition = doc.data().coordinate;
+        });
+
+        for (data in boatDict) {
+            var newPosition = boatDict[data].coordinate;
             var point = new google.maps.LatLng(newPosition._lat, newPosition._long);
-            var elapsedMs = Date.now() - doc.data().time;
             // Add the point to the heatmap.
             var image = 'https://i.imgur.com/sNZrCdk.png';
-            if (doc.data().userId in markerDict) {
-                markerDict[doc.data().userId].setPosition(point);
+            if (data in markerDict) {
+                markerDict[data].setPosition(point);
             } else {
                 var m = new google.maps.Marker({
                     position: point,
                     map: map,
+                    title: data,
                     icon: image
                 });
-                markerDict[doc.data().userId] = m;
+                markerDict[data] = m;
             }
+        }
+    });
+
+    db.collection("gates").onSnapshot(function (querySnapshot) {
+        querySnapshot.forEach(function (doc) {
+
+            if (doc.data().gateType === "Gate") {
+                gatesDict[doc.data().order] = {
+                    gateType: doc.data().gateType,
+                    timeStamp: doc.data().time,
+                    coordinate: doc.data().coordinate,
+                    coordinate2: doc.data().coordinate2
+                }
+            } else {
+                gatesDict[doc.data().order] = {
+                    gateType: doc.data().gateType,
+                    timeStamp: doc.data().time,
+                    coordinate: doc.data().coordinate
+                }
+            }
+
+            var image = 'buoy1.png';
+            var gatePosition = doc.data().coordinate;
+            var point = new google.maps.LatLng(gatePosition._lat, gatePosition._long);
+
+            var m = new google.maps.Marker({
+                position: point,
+                map: map,
+                icon: image
+            });
+
+            if (gatesDict[doc.data().order].coordinate2) {
+                var secondPosition = doc.data().coordinate2;
+                var secondpoint = new google.maps.LatLng(secondPosition._lat, secondPosition._long);
+                var m = new google.maps.Marker({
+                    position: secondpoint,
+                    map: map,
+                    icon: image
+                });
+            }
+            // Add the point to the heatmap.
         });
     });
 }
