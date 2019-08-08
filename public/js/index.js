@@ -40,15 +40,15 @@ function makeInfoBox(controlDiv, map) {
 }
 
 /**
-* Starting point for running the program. Authenticates the user.
-* @param {function()} onAuthSuccess - Called when authentication succeeds.
-*/
+ * Starting point for running the program. Authenticates the user.
+ * @param {function()} onAuthSuccess - Called when authentication succeeds.
+ */
 function initAuthentication(onAuthSuccess) {
-    firebase.auth().signInAnonymously().catch(function (error) {
+    firebase.auth().signInAnonymously().catch(function(error) {
         console.log(error.code + ', ' + error.message);
     }, { remember: 'sessionOnly' });
 
-    firebase.auth().onAuthStateChanged(function (user) {
+    firebase.auth().onAuthStateChanged(function(user) {
         if (user) {
             data.sender = user.uid;
             onAuthSuccess();
@@ -62,18 +62,20 @@ function initAuthentication(onAuthSuccess) {
  * Creates a map object with a click listener and a heatmap.
  */
 var map;
+
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: 31.771959, lng: 35.217018 },
         zoom: 8,
         styles: [{
-            featureType: 'poi',
-            stylers: [{ visibility: 'off' }]  // Turn off POI.
-        },
-        {
-            featureType: 'transit.station',
-            stylers: [{ visibility: 'off' }]  // Turn off bus, train stations etc.
-        }],
+                featureType: 'poi',
+                stylers: [{ visibility: 'off' }] // Turn off POI.
+            },
+            {
+                featureType: 'transit.station',
+                stylers: [{ visibility: 'off' }] // Turn off bus, train stations etc.
+            }
+        ],
         disableDoubleClickZoom: true,
         streetViewControl: false,
     });
@@ -85,7 +87,7 @@ function initMap() {
     map.controls[google.maps.ControlPosition.TOP_CENTER].push(infoBoxDiv);
 
     // Listen for clicks and add the location of the click to firebase.
-    map.addListener('click', function (e) {
+    map.addListener('click', function(e) {
         data.lat = e.latLng.lat();
         data.lng = e.latLng.lng();
         addToFirebase(data);
@@ -114,8 +116,8 @@ function initFirebase() {
 
     var db = firebase.firestore();
 
-    db.collection("track").onSnapshot(function (querySnapshot) {
-        querySnapshot.forEach(function (doc) {
+    db.collection("track").onSnapshot(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
             if (doc.data().userId in boatDict) {
                 if (boatDict[doc.data().userId].timeStamp < doc.data().time) {
                     boatDict[doc.data().userId] = {
@@ -150,8 +152,8 @@ function initFirebase() {
         }
     });
 
-    db.collection("gates").onSnapshot(function (querySnapshot) {
-        querySnapshot.forEach(function (doc) {
+    db.collection("gates").onSnapshot(function(querySnapshot) {
+        querySnapshot.forEach(function(doc) {
             var gatePosition = doc.data().coordinate1;
             var point = new google.maps.LatLng(gatePosition._lat, gatePosition._long);
 
@@ -203,16 +205,16 @@ function getTimestamp(addClick) {
     // Reference to location for saving the last click time.
     var ref = firebase.database().ref('last_message/' + data.sender);
 
-    ref.onDisconnect().remove();  // Delete reference from firebase on disconnect.
+    ref.onDisconnect().remove(); // Delete reference from firebase on disconnect.
 
     // Set value to timestamp.
-    ref.set(firebase.database.ServerValue.TIMESTAMP, function (err) {
-        if (err) {  // Write to last message was unsuccessful.
+    ref.set(firebase.database.ServerValue.TIMESTAMP, function(err) {
+        if (err) { // Write to last message was unsuccessful.
             console.log(err);
-        } else {  // Write to last message was successful.
-            ref.once('value', function (snap) {
-                addClick(snap.val());  // Add click with same timestamp.
-            }, function (err) {
+        } else { // Write to last message was successful.
+            ref.once('value', function(snap) {
+                addClick(snap.val()); // Add click with same timestamp.
+            }, function(err) {
                 console.warn(err);
             });
         }
@@ -225,11 +227,11 @@ function getTimestamp(addClick) {
  *     It contains the lat, lng, sender and timestamp.
  */
 function addToFirebase(data) {
-    getTimestamp(function (timestamp) {
+    getTimestamp(function(timestamp) {
         // Add the new timestamp to the record data.
         data.timestamp = timestamp;
-        var ref = firebase.database().ref('clicks').push(data, function (err) {
-            if (err) {  // Data was not written to firebase.
+        var ref = firebase.database().ref('clicks').push(data, function(err) {
+            if (err) { // Data was not written to firebase.
                 console.warn(err);
             }
         });
