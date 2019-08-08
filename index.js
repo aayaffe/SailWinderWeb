@@ -165,7 +165,7 @@ function initFirebase() {
             }
 
             var image = 'buoy1.png';
-            var gatePosition = doc.data().coordinate;
+            var gatePosition = doc.data().coordinate1;
             var point = new google.maps.LatLng(gatePosition._lat, gatePosition._long);
 
             var m = new google.maps.Marker({
