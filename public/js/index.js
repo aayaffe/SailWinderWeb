@@ -99,7 +99,7 @@ var boatDict = {};
 
 var gatesIconMap = new Map();
 gatesIconMap.set("StartLine", "images/start.png")
-gatesIconMap.set("FinishLine", "images/end.png")
+gatesIconMap.set("EndLine", "images/end.png")
 gatesIconMap.set("Gate", "images/buoy.png")
 gatesIconMap.set("Mark", "images/buoy.png")
 
