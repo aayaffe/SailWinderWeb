@@ -98,10 +98,10 @@ var markerDict = {};
 var boatDict = {};
 
 var gatesIconMap = new Map();
-gatesIconMap.set("Start", "start.png")
-gatesIconMap.set("End", "end.png")
-gatesIconMap.set("Gate", "buoy.png")
-gatesIconMap.set("WayPoint", "buoy.png")
+gatesIconMap.set("StartLine", "images/start.png")
+gatesIconMap.set("FinishLine", "images/end.png")
+gatesIconMap.set("Gate", "images/buoy.png")
+gatesIconMap.set("Mark", "images/buoy.png")
 
 /**
  * Set up a Firebase with deletion on clicks older than expiryMs
@@ -167,7 +167,8 @@ function initFirebase() {
                 var m = new google.maps.Marker({
                     position: secondpoint,
                     map: map,
-                    icon: gatesIconMap.get(doc.data().gateType)
+                    icon: gatesIconMap.get(doc.data().gateType),
+                    title: doc.data().gateType
                 });
                 var line = new google.maps.Polyline({
                     path: [point, secondpoint],
